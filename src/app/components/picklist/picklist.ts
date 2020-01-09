@@ -1,9 +1,10 @@
 import { NgModule, Component, ElementRef, AfterContentInit, AfterViewChecked, Input, Output, ContentChildren, QueryList, TemplateRef, EventEmitter, ViewChild} from '@angular/core';
 import {CommonModule} from '@angular/common';
-import {ButtonModule} from '../button/button';
-import {SharedModule,PrimeTemplate} from '../common/shared';
-import {DomHandler} from '../dom/domhandler';
-import {ObjectUtils} from '../utils/objectutils';
+import {ButtonModule} from 'primeng/button';
+import {SharedModule,PrimeTemplate} from 'primeng/api';
+import {DomHandler} from 'primeng/dom';
+import {ObjectUtils} from 'primeng/utils';
+import { FilterUtils } from 'primeng/utils';
 
 @Component({
     selector: 'p-pickList',
@@ -137,6 +138,8 @@ export class PickList implements AfterViewChecked,AfterContentInit {
     @Input() ariaSourceFilterLabel: string;
 
     @Input() ariaTargetFilterLabel: string;
+
+    @Input() filterMatchMode: string = "contains";
     
     @Output() onMoveToSource: EventEmitter<any> = new EventEmitter();
     
@@ -158,9 +161,9 @@ export class PickList implements AfterViewChecked,AfterContentInit {
 
     @Output() onTargetFilter: EventEmitter<any> = new EventEmitter();
 
-    @ViewChild('sourcelist', { static: false }) listViewSourceChild: ElementRef;
+    @ViewChild('sourcelist', { static: true }) listViewSourceChild: ElementRef;
     
-    @ViewChild('targetlist', { static: false }) listViewTargetChild: ElementRef;
+    @ViewChild('targetlist', { static: true }) listViewTargetChild: ElementRef;
 
     @ViewChild('sourceFilter', { static: false }) sourceFilterViewChild: ElementRef;
 
@@ -315,12 +318,12 @@ export class PickList implements AfterViewChecked,AfterContentInit {
 
         if(listType === this.SOURCE_LIST) {
             this.filterValueSource = query;
-            this.visibleOptionsSource = ObjectUtils.filter(data, searchFields, this.filterValueSource);
+            this.visibleOptionsSource = FilterUtils.filter(data, searchFields, this.filterValueSource, this.filterMatchMode);
             this.onSourceFilter.emit({query: this.filterValueSource, value: this.visibleOptionsSource});
         }
         else if(listType === this.TARGET_LIST) {
             this.filterValueTarget = query;
-            this.visibleOptionsTarget = ObjectUtils.filter(data, searchFields, this.filterValueTarget);
+            this.visibleOptionsTarget = FilterUtils.filter(data, searchFields, this.filterValueTarget, this.filterMatchMode);
             this.onTargetFilter.emit({query: this.filterValueTarget, value: this.visibleOptionsTarget});
         }
     }

@@ -1,6 +1,6 @@
-import { NgModule, Directive, ElementRef, AfterViewInit, OnDestroy, HostBinding, HostListener, Input, NgZone } from '@angular/core';
+import { NgModule, Directive, ElementRef, AfterViewInit, OnDestroy, Input, NgZone } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { DomHandler } from '../dom/domhandler';
+import { DomHandler } from 'primeng/dom';
 
 @Directive({
     selector: '[pTooltip]'
@@ -134,10 +134,13 @@ export class Tooltip implements AfterViewInit, OnDestroy {
         this._text = text;
         if (this.active) {
             if (this._text) {
-                if (this.container && this.container.offsetParent)
+                if (this.container && this.container.offsetParent) {
                     this.updateText();
-                else
+					this.align();
+				}
+                else {
                     this.show();
+                }
             }
             else {
                 this.hide();

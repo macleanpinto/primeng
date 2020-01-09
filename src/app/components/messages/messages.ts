@@ -1,8 +1,8 @@
 import {NgModule,Component,OnInit,OnDestroy,Input,Output,EventEmitter,Optional} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {trigger,state,style,transition,animate} from '@angular/animations';
-import {Message} from '../common/message';
-import {MessageService} from '../common/messageservice';
+import {Message} from 'primeng/api';
+import {MessageService} from 'primeng/api';
 import {Subscription} from 'rxjs';
 
 @Component({
@@ -20,8 +20,14 @@ import {Subscription} from 'rxjs';
             <span class="ui-messages-icon pi" [ngClass]="icon"></span>
             <ul>
                 <li *ngFor="let msg of value">
-                    <span *ngIf="msg.summary" class="ui-messages-summary" [innerHTML]="msg.summary"></span>
-                    <span *ngIf="msg.detail" class="ui-messages-detail" [innerHTML]="msg.detail"></span>
+                    <div *ngIf="!escape; else escapeOut">
+                        <span *ngIf="msg.summary" class="ui-messages-summary" [innerHTML]="msg.summary"></span>
+                        <span *ngIf="msg.detail" class="ui-messages-detail" [innerHTML]="msg.detail"></span>
+                    </div>
+                    <ng-template #escapeOut> 
+                        <span *ngIf="msg.summary" class="ui-messages-summary">{{msg.summary}}</span>
+                        <span *ngIf="msg.detail" class="ui-messages-detail">{{msg.detail}}</span>
+                    </ng-template>
                 </li>
             </ul>
         </div>
@@ -58,6 +64,8 @@ export class Messages implements OnInit, OnDestroy {
     @Input() enableService: boolean = true;
 
     @Input() key: string;
+
+    @Input() escape: boolean = true;
 
     @Input() showTransitionOptions: string = '300ms ease-out';
 

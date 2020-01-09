@@ -1,8 +1,8 @@
 import {NgModule,Component,ElementRef,AfterViewChecked,OnDestroy,Input,Renderer2,Inject,forwardRef,ViewChild} from '@angular/core';
 import {trigger,state,style,transition,animate,AnimationEvent} from '@angular/animations';
 import {CommonModule} from '@angular/common';
-import {DomHandler} from '../dom/domhandler';
-import {MenuItem} from '../common/menuitem';
+import {DomHandler} from 'primeng/dom';
+import {MenuItem} from 'primeng/api';
 import {RouterModule} from '@angular/router';
 
 @Component({
@@ -16,7 +16,7 @@ import {RouterModule} from '@angular/router';
                 <li *ngIf="!child.separator" #listitem [ngClass]="{'ui-menuitem ui-widget ui-corner-all':true,'ui-menuitem-active':listitem==activeItem,'ui-helper-hidden': child.visible === false}"
                     [class]="child.styleClass" [ngStyle]="child.style">
                     <a *ngIf="!child.routerLink" [href]="child.url||'#'" class="ui-menuitem-link ui-corner-all" [attr.target]="child.target" [attr.title]="child.title" [attr.id]="child.id"
-                        [ngClass]="{'ui-state-disabled':child.disabled}" 
+                        [ngClass]="{'ui-state-disabled':child.disabled}" [attr.tabindex]="child.tabindex ? child.tabindex : '0'" 
                         (click)="itemClick($event, child, listitem)">
                         <span class="ui-menuitem-icon" *ngIf="child.icon" [ngClass]="child.icon"></span>
                         <span class="ui-menuitem-text">{{child.label}}</span>
@@ -24,7 +24,7 @@ import {RouterModule} from '@angular/router';
                     </a>
                     <a *ngIf="child.routerLink" [routerLink]="child.routerLink" [queryParams]="child.queryParams" [routerLinkActive]="'ui-state-active'" 
                         [routerLinkActiveOptions]="child.routerLinkActiveOptions||{exact:false}" [href]="child.url||'#'" class="ui-menuitem-link ui-corner-all" 
-                        [attr.target]="child.target" [attr.title]="child.title" [attr.id]="child.id"
+                        [attr.target]="child.target" [attr.title]="child.title" [attr.id]="child.id" [attr.tabindex]="child.tabindex ? child.tabindex : '0'" 
                         [ngClass]="{'ui-state-disabled':child.disabled}" 
                         (click)="itemClick($event, child, listitem)">
                         <span class="ui-menuitem-icon" *ngIf="child.icon" [ngClass]="child.icon"></span>
@@ -80,6 +80,7 @@ export class SlideMenuSub implements OnDestroy {
         
         if (item.items && !this.slideMenu.animating) {
             this.slideMenu.left -= this.slideMenu.menuWidth;
+            
             this.activeItem = listitem;
             this.slideMenu.animating = true;
             setTimeout(() => this.slideMenu.animating = false, this.effectDuration);
@@ -101,7 +102,7 @@ export class SlideMenuSub implements OnDestroy {
         <div #container [ngClass]="{'ui-slidemenu ui-widget ui-widget-content ui-corner-all':true, 'ui-slidemenu-dynamic ui-shadow':popup}" 
             [class]="styleClass" [ngStyle]="style" (click)="onClick($event)"
             [@overlayAnimation]="{value: 'visible', params: {showTransitionParams: showTransitionOptions, hideTransitionParams: hideTransitionOptions}}" [@.disabled]="popup !== true" (@overlayAnimation.start)="onOverlayAnimationStart($event)" *ngIf="!popup || visible">
-            <div class="ui-slidemenu-wrapper" [style.height.px]="viewportHeight">
+            <div class="ui-slidemenu-wrapper" [style.height]="left ? viewportHeight + 'px' : 'auto'">
                 <div #slideMenuContent class="ui-slidemenu-content">
                     <p-slideMenuSub [item]="model" root="root" [index]="0" [menuWidth]="menuWidth" [effectDuration]="effectDuration" [easing]="easing"></p-slideMenuSub>
                 </div>

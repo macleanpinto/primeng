@@ -1,9 +1,10 @@
-import {NgModule,Component,ElementRef,OnInit,AfterContentInit,DoCheck,OnDestroy,Input,Output,SimpleChange,EventEmitter,ContentChild,ContentChildren,QueryList,TemplateRef} from '@angular/core';
+import {NgModule,Component,ElementRef,OnInit,AfterContentInit,Input,Output,EventEmitter,ContentChild,ContentChildren,QueryList,TemplateRef, OnChanges, SimpleChanges} from '@angular/core';
 import {CommonModule} from '@angular/common';
-import {ObjectUtils} from '../utils/objectutils';
-import {Header,Footer,PrimeTemplate,SharedModule} from '../common/shared';
-import {PaginatorModule} from '../paginator/paginator';
-import {BlockableUI} from '../common/blockableui';
+import {ObjectUtils} from 'primeng/utils';
+import {Header,Footer,PrimeTemplate,SharedModule} from 'primeng/api';
+import {PaginatorModule} from 'primeng/paginator';
+import {BlockableUI} from 'primeng/api';
+import {FilterUtils} from 'primeng/utils';
 
 @Component({
     selector: 'p-dataView',
@@ -38,7 +39,7 @@ import {BlockableUI} from '../common/blockableui';
         </div>
     `
 })
-export class DataView implements OnInit,AfterContentInit,BlockableUI {
+export class DataView implements OnInit,AfterContentInit,BlockableUI,OnChanges {
 
     @Input() layout: string = 'list';
 
@@ -50,7 +51,7 @@ export class DataView implements OnInit,AfterContentInit,BlockableUI {
 
     @Input() pageLinks: number = 5;
     
-    @Input() rowsPerPageOptions: number[];
+    @Input() rowsPerPageOptions: any[];
 
     @Input() paginatorPosition: string = 'bottom';
     
@@ -84,13 +85,19 @@ export class DataView implements OnInit,AfterContentInit,BlockableUI {
 
     @Input() first: number = 0;
 
+    @Input() sortField: string;
+
+    @Input() sortOrder: number;
+
+    @Input() value: any[];
+
     @Output() onPage: EventEmitter<any> = new EventEmitter();
 
     @Output() onSort: EventEmitter<any> = new EventEmitter();
     
-    @ContentChild(Header, { static: false }) header;
+    @ContentChild(Header, { static: true }) header;
 
-    @ContentChild(Footer, { static: false }) footer;
+    @ContentChild(Footer, { static: true }) footer;
     
     @ContentChildren(PrimeTemplate) templates: QueryList<any>;
     
@@ -110,10 +117,6 @@ export class DataView implements OnInit,AfterContentInit,BlockableUI {
 
     filterValue: string;
 
-    _sortField: string;
-
-    _sortOrder: number = 1;
-
     initialized: boolean;
     
     constructor(public el: ElementRef) {}
@@ -125,28 +128,21 @@ export class DataView implements OnInit,AfterContentInit,BlockableUI {
         this.initialized = true;
     }
 
-    @Input() get sortField(): string {
-        return this._sortField;
-    }
-
-    set sortField(val: string) {
-        this._sortField = val;
-
-        //avoid triggering lazy load prior to lazy initialization at onInit
-        if ( !this.lazy || this.initialized ) {
-            this.sort();
+    ngOnChanges(simpleChanges: SimpleChanges) {
+        if (simpleChanges.value) {
+            this._value = simpleChanges.value.currentValue;
+            this.updateTotalRecords();
+            
+            if (!this.lazy && this.hasFilter()) {
+                this.filter(this.filterValue);
+            }
         }
-    }
 
-    @Input() get sortOrder(): number {
-        return this._sortOrder;
-    }
-    set sortOrder(val: number) {
-        this._sortOrder = val;
-
-         //avoid triggering lazy load prior to lazy initialization at onInit
-        if ( !this.lazy || this.initialized ) {
-            this.sort();
+        if (simpleChanges.sortField || simpleChanges.sortOrder) {
+            //avoid triggering lazy load prior to lazy initialization at onInit
+            if (!this.lazy || this.initialized) {
+                this.sort();
+            }
         }
     }
     
@@ -186,18 +182,6 @@ export class DataView implements OnInit,AfterContentInit,BlockableUI {
         }
     }
     
-    @Input() get value(): any[] {
-        return this._value;
-    }
-
-    set value(val:any[]) {
-        this._value = val;
-        this.updateTotalRecords();
-        if (!this.lazy && this.hasFilter()) {
-            this.filter(this.filterValue);
-        }
-    }
-
     changeLayout(layout: string) {
         this.layout = layout;
         this.updateItemTemplate();
@@ -276,12 +260,12 @@ export class DataView implements OnInit,AfterContentInit,BlockableUI {
         return this.el.nativeElement.children[0];
     }
 
-    filter(filter: string) {
+    filter(filter: string, filterMatchMode:string ="contains") {
         this.filterValue = filter;
 
         if (this.value && this.value.length) {
             let searchFields = this.filterBy.split(',');
-            this.filteredValue = ObjectUtils.filter(this.value, searchFields, filter);
+            this.filteredValue = FilterUtils.filter(this.value, searchFields, filter, filterMatchMode);
     
             if (this.filteredValue.length === this.value.length ) {
                 this.filteredValue = null;

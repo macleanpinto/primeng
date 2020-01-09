@@ -1,11 +1,10 @@
-import {NgModule,Component,ElementRef,Input,Output,OnInit,AfterContentInit,OnDestroy,EventEmitter,TemplateRef,EmbeddedViewRef,ViewContainerRef,
+import {NgModule,Component,ElementRef,Input,Output,AfterContentInit,EventEmitter,TemplateRef,
         Inject,forwardRef,ContentChildren,QueryList} from '@angular/core';
 import {trigger,state,style,transition,animate} from '@angular/animations';
 import {CommonModule} from '@angular/common';
-import {DomHandler} from '../dom/domhandler';
-import {SharedModule} from '../common/shared';
-import {TreeNode} from '../common/treenode';
-import {PrimeTemplate} from '../common/shared';
+import {SharedModule} from 'primeng/api';
+import {TreeNode} from 'primeng/api';
+import {PrimeTemplate} from 'primeng/api';
 
 @Component({
     selector: '[pOrganizationChartNode]',
@@ -92,6 +91,11 @@ export class OrganizationChartNode {
     
     toggleNode(event: Event, node: TreeNode) {
         node.expanded = !node.expanded;
+        if(node.expanded)
+            this.chart.onNodeExpand.emit({originalEvent: event, node: this.node});
+        else
+            this.chart.onNodeCollapse.emit({originalEvent: event, node: this.node});
+            
         event.preventDefault();
     }
     
@@ -125,6 +129,10 @@ export class OrganizationChart implements AfterContentInit {
     @Output() onNodeSelect: EventEmitter<any> = new EventEmitter();
     
     @Output() onNodeUnselect: EventEmitter<any> = new EventEmitter();
+
+    @Output() onNodeExpand: EventEmitter<any> = new EventEmitter();
+
+    @Output() onNodeCollapse: EventEmitter<any> = new EventEmitter();
     
     @ContentChildren(PrimeTemplate) templates: QueryList<any>;
     
